@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Breast Cancer Detection{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="hero-section">
+                <i class="fas fa-ribbon" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                <h1>Welcome Back</h1>
+                <p>Login to access the Breast Cancer Detection System</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-body p-4">
+                    <h3 class="text-center mb-4">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </h3>
+                    
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="user_type" class="form-label">Login As</label>
+                            <select class="form-control" id="user_type" name="user_type" required>
+                                <option value="">Select User Type</option>
+                                <option value="doctor">Doctor</option>
+                                <option value="patient">Patient</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="Enter your email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       placeholder="Enter your password" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember">
+                            <label class="form-check-label" for="remember">
+                                Remember me
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                    </form>
+                    
+                    <div class="text-center">
+                        <p>Don't have an account? 
+                            <a href="{{ url_for('register') }}" class="text-decoration-none">
+                                Register here
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Add form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const userType = document.getElementById('user_type').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        if (!userType || !email || !password) {
+            e.preventDefault();
+            alert('Please fill in all fields');
+        }
+    });
+</script>
+{% endblock %}

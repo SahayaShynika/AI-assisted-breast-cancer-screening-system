@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Mammogram - Breast Cancer Detection{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="hero-section">
+                <i class="fas fa-x-ray" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                <h1>Upload Mammogram</h1>
+                <p>Upload your mammogram image for AI-powered analysis</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                        <div class="upload-area" id="uploadArea">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h3>Drop your mammogram image here</h3>
+                            <p class="text-muted">or click to browse</p>
+                            <input type="file" name="file" id="fileInput" accept="image/*" style="display: none;" required>
+                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click()">
+                                <i class="fas fa-folder-open"></i> Choose File
+                            </button>
+                        </div>
+                        
+                        <div id="filePreview" style="display: none;" class="mt-4">
+                            <h5>Selected Image:</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <img id="previewImage" class="img-fluid rounded" alt="Preview">
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Image Details:</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>File Name:</strong> <span id="fileName"></span></li>
+                                        <li><strong>File Size:</strong> <span id="fileSize"></span></li>
+                                        <li><strong>File Type:</strong> <span id="fileType"></span></li>
+                                    </ul>
+                                    
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Important:</strong> Please ensure the image is a clear mammogram scan for accurate results.
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+                                        <i class="fas fa-microscope"></i> Analyze Image
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-outline-secondary w-100 mt-2" onclick="resetUpload()">
+                                        <i class="fas fa-times"></i> Remove Image
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Guidelines -->
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Upload Guidelines</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-check-circle text-success"></i> Recommended Formats</h6>
+                            <ul>
+                                <li>JPEG, PNG, DICOM formats</li>
+                                <li>High resolution images (300 DPI or higher)</li>
+                                <li>Clear and focused mammogram scans</li>
+                                <li>File size under 16MB</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-times-circle text-danger"></i> Avoid</h6>
+                            <ul>
+                                <li>Blurred or low-quality images</li>
+                                <li>Cropped or incomplete scans</li>
+                                <li>Non-medical images</li>
+                                <li>Multiple images in one file</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Process Info -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-cogs"></i> How It Works</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="feature-card">
+                                <i class="fas fa-upload"></i>
+                                <h6>Upload Image</h6>
+                                <p class="text-muted small">Upload your mammogram scan</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="feature-card">
+                                <i class="fas fa-brain"></i>
+                                <h6>AI Analysis</h6>
+                                <p class="text-muted small">DenseNet-121 processes the image</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="feature-card">
+                                <i class="fas fa-chart-line"></i>
+                                <h6>Get Results</h6>
+                                <p class="text-muted small">Receive instant analysis</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="feature-card">
+                                <i class="fas fa-file-medical"></i>
+                                <h6>Save Report</h6>
+                                <p class="text-muted small">Results saved to your profile</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const uploadForm = document.getElementById('uploadForm');
+    
+    // Click to upload
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.backgroundColor = 'rgba(233, 30, 99, 0.1)';
+        uploadArea.style.borderColor = 'var(--secondary-color)';
+    });
+    
+    uploadArea.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        uploadArea.style.backgroundColor = 'rgba(233, 30, 99, 0.05)';
+        uploadArea.style.borderColor = 'var(--primary-color)';
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.backgroundColor = 'rgba(233, 30, 99, 0.05)';
+        uploadArea.style.borderColor = 'var(--primary-color)';
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
+    });
+    
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFile(e.target.files[0]);
+        }
+    });
+    
+    function handleFile(file) {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please upload an image file');
+            return;
+        }
+        
+        // Validate file size (16MB max)
+        if (file.size > 16 * 1024 * 1024) {
+            alert('File size must be less than 16MB');
+            return;
+        }
+        
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('previewImage').src = e.target.result;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('fileType').textContent = file.type;
+            
+            uploadArea.style.display = 'none';
+            filePreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function resetUpload() {
+        fileInput.value = '';
+        uploadArea.style.display = 'block';
+        filePreview.style.display = 'none';
+    }
+    
+    // Form submission with loading state
+    uploadForm.addEventListener('submit', (e) => {
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+    });
+</script>
+{% endblock %}

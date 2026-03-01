@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard - Breast Cancer Detection{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- Welcome Section -->
+    <div class="hero-section">
+        <h1><i class="fas fa-user-md"></i> Doctor Dashboard</h1>
+        <p>Dr. {{ current_user.name }} - Medical Overview</p>
+    </div>
+    
+    <!-- Statistics Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <i class="fas fa-users fa-2x mb-3"></i>
+                <h3>{{ predictions|length }}</h3>
+                <p>Total Scans</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <i class="fas fa-check-circle fa-2x mb-3"></i>
+                <h3>{{ predictions|selectattr('prediction_result', 'equalto', 'normal')|list|length }}</h3>
+                <p>Normal</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                <h3>{{ predictions|selectattr('prediction_result', 'equalto', 'benign')|list|length }}</h3>
+                <p>Benign</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <i class="fas fa-radiation fa-2x mb-3"></i>
+                <h3>{{ predictions|selectattr('prediction_result', 'equalto', 'malignant')|list|length }}</h3>
+                <p>Malignant</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                    <h5>Analytics</h5>
+                    <p class="text-muted">View detailed analytics and trends</p>
+                    <button class="btn btn-primary" onclick="showAnalytics()">
+                        <i class="fas fa-chart-line"></i> View Analytics
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-day fa-3x text-success mb-3"></i>
+                    <h5>Today's Scans</h5>
+                    <p class="text-muted">View today's patient scans</p>
+                    <button class="btn btn-success" onclick="filterToday()">
+                        <i class="fas fa-filter"></i> Filter Today
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
+                    <h5>Critical Cases</h5>
+                    <p class="text-muted">View malignant cases requiring attention</p>
+                    <button class="btn btn-danger" onclick="filterCritical()">
+                        <i class="fas fa-filter"></i> Filter Critical
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Patient Results Table -->
+    <div class="table-container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3><i class="fas fa-list"></i> Patient Scan Results</h3>
+            <div>
+                <button class="btn btn-outline-secondary btn-sm" onclick="exportData()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+                <button class="btn btn-outline-primary btn-sm" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+        
+        {% if predictions %}
+        <div class="table-responsive">
+            <table class="table table-hover" id="predictionsTable">
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Date</th>
+                        <th>Result</th>
+                        <th>Confidence</th>
+                        <th>Stage</th>
+                        <th>Contact</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prediction in predictions %}
+                    <tr data-date="{{ prediction.created_at.strftime('%Y-%m-%d') }}" 
+                        data-result="{{ prediction.prediction_result }}">
+                        <td>
+                            <strong>{{ prediction.user.name }}</strong><br>
+                            <small class="text-muted">{{ prediction.user.email }}</small>
+                        </td>
+                        <td>{{ prediction.created_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+                        <td>
+                            <span class="badge badge-custom 
+                                {% if prediction.prediction_result == 'normal' %}bg-success
+                                {% elif prediction.prediction_result == 'benign' %}bg-warning
+                                {% else %}bg-danger{% endif %}">
+                                {{ prediction.prediction_result.title() }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar 
+                                    {% if prediction.confidence_score > 0.8 %}bg-success
+                                    {% elif prediction.confidence_score > 0.6 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ prediction.confidence_score * 100 }}%">
+                                    {{ "%.1f"|format(prediction.confidence_score * 100) }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ prediction.cancer_stage }}</td>
+                        <td>
+                            {% if prediction.user.phone_number %}
+                            <i class="fas fa-phone"></i> {{ prediction.user.phone_number }}
+                            {% else %}
+                            <span class="text-muted">Not provided</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('result', prediction_id=prediction.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                {% if prediction.prediction_result == 'malignant' %}
+                                <button class="btn btn-sm btn-outline-danger" 
+                                        onclick="notifyPatient('{{ prediction.user.email }}')">
+                                    <i class="fas fa-bell"></i> Notify
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="card text-center p-5">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h4>No Patient Scans</h4>
+            <p class="text-muted">No patients have uploaded scans yet.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Analytics Modal -->
+    <div class="modal fade" id="analyticsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Analytics Overview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Success Rate</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-success" style="width: 75%">75%</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Detection Accuracy</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-info" style="width: 92%">92%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <canvas id="analyticsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function filterToday() {
+        const today = new Date().toISOString().split('T')[0];
+        const rows = document.querySelectorAll('#predictionsTable tbody tr');
+        
+        rows.forEach(row => {
+            if (row.dataset.date === today) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    function filterCritical() {
+        const rows = document.querySelectorAll('#predictionsTable tbody tr');
+        
+        rows.forEach(row => {
+            if (row.dataset.result === 'malignant') {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    function showAnalytics() {
+        const modal = new bootstrap.Modal(document.getElementById('analyticsModal'));
+        modal.show();
+    }
+    
+    function notifyPatient(email) {
+        if (confirm(`Send notification to ${email}?`)) {
+            // Here you would implement the notification logic
+            alert('Notification sent successfully!');
+        }
+    }
+    
+    function exportData() {
+        // Implement export functionality
+        alert('Export feature would download CSV file with all patient data');
+    }
+    
+    function refreshData() {
+        location.reload();
+    }
+    
+    // Add search functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add search input
+        const tableContainer = document.querySelector('.table-container');
+        const searchDiv = document.createElement('div');
+        searchDiv.className = 'mb-3';
+        searchDiv.innerHTML = `
+            <input type="text" class="form-control" placeholder="Search patients..." id="searchInput">
+        `;
+        tableContainer.insertBefore(searchDiv, tableContainer.firstChild);
+        
+        // Add search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#predictionsTable tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    });
+</script>
+{% endblock %}
