@@ -75,7 +75,7 @@ MyFirstProject/
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/SahayaShynika/AI-assisted-breast-cancer-screening-system.git
 cd MyFirstProject
 
 # Create virtual environment
@@ -121,7 +121,7 @@ python enhanced_train.py
 
 ```bash
 # Start the Flask web application
-python app.py
+python app_fixed.py
 
 # The application will be available at:
 # http://localhost:5000
@@ -157,7 +157,7 @@ The DenseNet-121 model is trained to classify mammograms into three categories:
 
 - **Accuracy**: ~95% (varies based on dataset quality)
 - **Input Size**: 224x224 pixels
-- **Model Size**: ~80MB
+- **Model Size**: ~37MB
 - **Inference Time**: <1 second per image
 
 ## API Endpoints
@@ -169,6 +169,7 @@ The DenseNet-121 model is trained to classify mammograms into three categories:
 - `GET/POST /upload` - Image upload and analysis
 - `GET /result/<id>` - View prediction results
 - `GET /logout` - User logout
+- `GET /model_status` - Check model loading status
 
 ## Database Schema
 
@@ -198,6 +199,23 @@ The DenseNet-121 model is trained to classify mammograms into three categories:
 - File upload validation
 - SQL injection prevention
 - XSS protection
+
+## Demo Credentials
+
+For testing purposes, use these demo accounts:
+
+- **Doctor**: doctor@demo.com / doctor123
+- **Patient**: patient@demo.com / patient123
+
+## Testing
+
+The project includes comprehensive test scripts:
+
+- `test_model_load.py` - Test model loading
+- `test_prediction.py` - Test model predictions
+- `test_upload_simulation.py` - Test upload workflow
+- `test_app_status.py` - Test application status
+- `test_complete_workflow.py` - Test complete workflow
 
 ## Future Enhancements
 
