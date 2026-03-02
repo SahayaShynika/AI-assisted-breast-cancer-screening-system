@@ -1,0 +1,10 @@
+services:
+- buildCommand: pip install -r requirements.txt
+  env: python
+  envVars:
+  - key: PYTHON_VERSION
+    value: '3.12'
+  name: breast-cancer-screening
+  plan: free
+  startCommand: gunicorn app_production:app
+  type: web
