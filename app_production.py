@@ -43,22 +43,53 @@ def load_model():
     """Load the trained model"""
     global model, classes
     try:
-        model_path = os.path.join(os.getcwd(), 'models', 'densenet121_model.h5')
-        print(f"Loading model from: {model_path}")
-        print(f"Model file exists: {os.path.exists(model_path)}")
+        # Try multiple possible model paths
+        possible_paths = [
+            os.path.join(os.getcwd(), 'models', 'densenet121_model.h5'),
+            os.path.join(os.path.dirname(__file__), 'models', 'densenet121_model.h5'),
+            '/var/task/models/densenet121_model.h5',  # Vercel deployment path
+            'models/densenet121_model.h5'  # Relative path
+        ]
         
-        if os.path.exists(model_path):
-            # Disable TensorFlow warnings for cleaner output
-            tf.get_logger().setLevel('ERROR')
-            model = tf.keras.models.load_model(model_path)
-            classes = ["normal", "benign", "malignant"]
-            print("Model loaded successfully!")
-            return True
-        else:
-            print("Model file not found!")
+        model_path = None
+        for path in possible_paths:
+            print(f"Checking model path: {path}")
+            print(f"Model file exists at {path}: {os.path.exists(path)}")
+            if os.path.exists(path):
+                model_path = path
+                break
+        
+        if model_path is None:
+            print("Model file not found in any expected location!")
+            print("Available files in current directory:")
+            try:
+                for item in os.listdir('.'):
+                    print(f"  - {item}")
+            except:
+                pass
+            print("Available files in models directory:")
+            try:
+                for item in os.listdir('models'):
+                    print(f"  - models/{item}")
+            except:
+                pass
             return False
+        
+        print(f"Loading model from: {model_path}")
+        
+        # Disable TensorFlow warnings for cleaner output
+        tf.get_logger().setLevel('ERROR')
+        model = tf.keras.models.load_model(model_path)
+        classes = ["normal", "benign", "malignant"]
+        print("Model loaded successfully!")
+        print(f"Model input shape: {model.input_shape}")
+        print(f"Model output shape: {model.output_shape}")
+        return True
+        
     except Exception as e:
         print(f"Model loading error: {e}")
+        import traceback
+        traceback.print_exc()
         model = None
         return False
 

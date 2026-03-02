@@ -1,0 +1,39 @@
+# Include model files - don't ignore them
+# This file ensures models/ directory is included in deployment
+
+# Ignore common development files
+.git/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Ignore IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore large datasets (keep model)
+dataset/
+logs/
+instance/
